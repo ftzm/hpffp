@@ -105,3 +105,87 @@ myOr = foldr (\x y -> if x == True then True else y) False
 
 -- >>> myOr [False, False, True, False]
 -- True
+
+-- 2. myAny returns True if a -> Bool applied to any of the values in the
+-- list returns True.
+
+myAny :: (a -> Bool) -> [a] -> Bool
+myAny f = foldr (\x y -> if f x then True else y) False
+
+-- >>> myAny even [1, 2, 3]
+-- True
+
+-- 3. Write two versions of myElem. One version should use folding
+-- and the other should use any.
+myElem :: Eq a => a -> [a] -> Bool
+myElem e = foldr (\x y -> if e == x then True else y) False
+-- >>> myElem 4 [1, 2, 3]
+-- False
+
+myElem' :: Eq a => a -> [a] -> Bool
+myElem' = myAny . (==)
+-- >>> myElem' 2 [1, 2, 3]
+-- True
+
+-- 4. Implement myReverse, don’t worry about trying to make it
+-- lazy.
+myReverse :: [a] -> [a]
+myReverse = undefined
+-- Prelude> myReverse "blah"
+-- "halb"
+-- Prelude> myReverse [1..5]
+-- [5,4,3,2,1]
+
+-- 5. Write myMap in terms of foldr. It should have the same behavior
+-- as the built-in map.
+myMap :: (a -> b) -> [a] -> [b]
+myMap = undefined
+
+-- 6. Write myFilter in terms of foldr. It should have the same behav-
+-- ior as the built-in filter.
+myFilter :: (a -> Bool) -> [a] -> [a]
+myFilter = undefined
+
+-- 7. squish flattens a list of lists into a list
+squish :: [[a]] -> [a]
+squish = undefined
+
+-- 8. squishMap maps a function over a list and concatenates the re-
+-- sults.
+squishMap :: (a -> [b]) -> [a] -> [b]
+squishMap = undefined
+-- Prelude> squishMap (\x -> [1, x, 3]) [2]
+-- [1,2,3]
+-- Prelude> let f x = "WO " ++ [x] ++ " OT "
+-- Prelude> squishMap f "blah"
+-- "WO b OT WO l OT WO a OT WO h OT "
+
+-- 9. squishAgain flattens a list of lists into a list. This time re-use the
+-- squishMap function.
+squishAgain :: [[a]] -> [a]
+squishAgain = undefined
+
+-- 10. myMaximumBy takes a comparison function and a list and returns
+-- the greatest element of the list based on the last value that the
+-- comparison returned GT for.
+myMaximumBy :: (a -> a -> Ordering) -> [a] -> a
+myMaximumBy = undefined
+-- Prelude> myMaximumBy (\_ _ -> GT) [1..10]
+-- 1
+-- Prelude> myMaximumBy (\_ _ -> LT) [1..10]
+-- 384
+-- 10
+-- Prelude> myMaximumBy compare [1..10]
+-- 10
+
+-- 11. myMinimumBy takes a comparison function and a list and returns
+-- the least element of the list based on the last value that the
+-- comparison returned LT for.
+myMinimumBy :: (a -> a -> Ordering) -> [a] -> a
+myMinimumBy = undefined
+-- Prelude> myMinimumBy (\_ _ -> GT) [1..10]
+-- 10
+-- Prelude> myMinimumBy (\_ _ -> LT) [1..10]
+-- 1
+-- Prelude> myMinimumBy compare [1..10]
+-- 1
