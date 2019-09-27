@@ -130,30 +130,34 @@ myElem' = myAny . (==)
 -- 4. Implement myReverse, don’t worry about trying to make it
 -- lazy.
 myReverse :: [a] -> [a]
-myReverse = undefined
--- Prelude> myReverse "blah"
--- "halb"
--- Prelude> myReverse [1..5]
--- [5,4,3,2,1]
+myReverse = foldr (\x y -> y ++ [x]) []
+-- >>> myReverse [1,2,3]
+-- [3,2,1]
 
 -- 5. Write myMap in terms of foldr. It should have the same behavior
 -- as the built-in map.
 myMap :: (a -> b) -> [a] -> [b]
-myMap = undefined
+myMap f = foldr (\x y -> f x : y) []
+-- >>> myMap even [1,2,3,4,5]
+-- [False,True,False,True,False]
 
 -- 6. Write myFilter in terms of foldr. It should have the same behav-
 -- ior as the built-in filter.
 myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter = undefined
+myFilter f = foldr (\x y -> if f x then x : y else y) []
+-- >>> myFilter even [1,2,3,4,5]
+-- [2,4]
 
 -- 7. squish flattens a list of lists into a list
 squish :: [[a]] -> [a]
-squish = undefined
+squish = foldr (++) []
+-- >>> squish [[1,2,3],[4,5,6]]
+-- [1,2,3,4,5,6]
 
 -- 8. squishMap maps a function over a list and concatenates the re-
 -- sults.
 squishMap :: (a -> [b]) -> [a] -> [b]
-squishMap = undefined
+squishMap f = squish . (myMap f)
 -- Prelude> squishMap (\x -> [1, x, 3]) [2]
 -- [1,2,3]
 -- Prelude> let f x = "WO " ++ [x] ++ " OT "
