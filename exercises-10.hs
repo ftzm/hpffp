@@ -167,13 +167,18 @@ squishMap f = squish . (myMap f)
 -- 9. squishAgain flattens a list of lists into a list. This time re-use the
 -- squishMap function.
 squishAgain :: [[a]] -> [a]
-squishAgain = undefined
+squishAgain = squishMap id
+-- >>> squishAgain [[1,2,3],[4,5,6]]
+-- [1,2,3,4,5,6]
 
 -- 10. myMaximumBy takes a comparison function and a list and returns
 -- the greatest element of the list based on the last value that the
 -- comparison returned GT for.
 myMaximumBy :: (a -> a -> Ordering) -> [a] -> a
-myMaximumBy = undefined
+myMaximumBy f (x:xs) = foldr (\a b -> if (f a b) == GT then a else b) x xs
+-- >>> myMaximumBy compare [1,7,3,4,5]
+-- 7
+
 -- Prelude> myMaximumBy (\_ _ -> GT) [1..10]
 -- 1
 -- Prelude> myMaximumBy (\_ _ -> LT) [1..10]
@@ -186,7 +191,10 @@ myMaximumBy = undefined
 -- the least element of the list based on the last value that the
 -- comparison returned LT for.
 myMinimumBy :: (a -> a -> Ordering) -> [a] -> a
-myMinimumBy = undefined
+myMinimumBy f (x:xs) = foldr (\a b -> if (f a b) == LT then a else b) x xs
+-- >>> myMinimumBy compare [1,7,3,4,5]
+-- 1
+
 -- Prelude> myMinimumBy (\_ _ -> GT) [1..10]
 -- 10
 -- Prelude> myMinimumBy (\_ _ -> LT) [1..10]
