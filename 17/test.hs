@@ -1,3 +1,5 @@
+{-# TupleSections #-}
+
 import Data.Monoid
 import Data.List (elemIndex)
 import Control.Applicative
@@ -51,6 +53,8 @@ summed =  sum <$> ((,) <$> x'' <*> y'')
 -- >>> summed
 -- Just 5
 
+-------------------------------------------------------------------------------
+
 newtype Identity a = Identity a deriving (Eq, Ord, Show)
 
 instance Functor Identity where
@@ -69,6 +73,8 @@ testeroni = const <$> mkId xxs <*> mkId xxs'
 -- >>> testeroni
 -- Identity [1,2,3]
 
+-------------------------------------------------------------------------------
+
 newtype Constant a b = Constant { getConstant :: a } deriving (Eq, Ord, Show)
 
 instance Functor (Constant a) where
@@ -83,3 +89,81 @@ g = Constant (Sum 2)
 
 -- >>> f <*> g
 -- Constant {getConstant = Sum {getSum = 3}}
+
+-------------------------------------------------------------------------------
+-- List Applicative
+
+data List a = Nil
+  | Cons a (List a)
+  deriving (Eq, Show)
+
+instance Semigroup (List a) where
+  l <> l' =
+    case l of
+      Nil -> l'
+      Cons x xs -> Cons x (xs <> l')
+
+
+foldList :: (a -> b -> b) -> b -> List a -> b
+foldList f acc Nil = acc
+foldList f acc (Cons x xs) = f x (foldList f acc xs)
+
+instance Functor List where
+  fmap f list = case list of
+    Nil -> Nil
+    Cons x xs -> Cons (f x) (fmap f xs)
+
+-- >>> fmap (+1) $ Cons 1 (Cons 2 Nil)
+-- Cons 2 (Cons 3 Nil)
+
+instance Applicative List where
+  pure x = Cons x Nil
+  fs <*> xs = foldList (<>) Nil $ fmap (\x -> fmap (\f -> f x) fs) xs
+
+-- >>> let f = Cons (+1) (Cons (*2) Nil)
+-- >>> let v = Cons 1 (Cons 2 Nil)
+-- >>> f <*> v
+-- Cons 2 (Cons 2 (Cons 3 (Cons 4 Nil)))
+
+-- Cons 2 (Cons 3 (Cons 2 (Cons 4 Nil))) <-- Correct
+
+-------------------------------------------------------------------------------
+-- ZipList Applicative
+
+
+take' :: Int -> List a -> List a
+take' = undefined
+
+newtype ZipList' a = ZipList' (List a) deriving (Eq, Show)
+
+instance Functor ZipList' where
+  fmap f (ZipList' xs) = ZipList' $ fmap f xs
+
+instance Applicative ZipList' where
+  pure a = ZipList' $ Cons a Nil
+  ZipList' fs' <*> ZipList' xs' = case fs' of
+    Nil -> ZipList' Nil
+    Cons f fs -> case xs' of
+      Nil -> ZipList' Nil
+      Cons x xs -> ZipList' $ Cons (f x) (fs <*> xs)
+
+-- >>> ZipList' (Cons (+1) (Cons (*2) Nil)) <*> ZipList' (Cons 1 (Cons 2 Nil))
+-- ZipList' (Cons 2 (Cons 4 Nil))
+
+-------------------------------------------------------------------------------
+-- Combinations
+
+stops :: String
+stops = "pbtdkg"
+
+vowels :: String
+vowels = "aeiou"
+
+other :: String
+other = "!$#"
+
+combos :: [a] -> [b] -> [c] -> [(a, b, c)]
+combos = liftA3 (,,)
+
+-- >>> combos stops vowels other
+-- [('p','a','!'),('p','a','$'),('p','a','#'),('p','e','!'),('p','e','$'),('p','e','#'),('p','i','!'),('p','i','$'),('p','i','#'),('p','o','!'),('p','o','$'),('p','o','#'),('p','u','!'),('p','u','$'),('p','u','#'),('b','a','!'),('b','a','$'),('b','a','#'),('b','e','!'),('b','e','$'),('b','e','#'),('b','i','!'),('b','i','$'),('b','i','#'),('b','o','!'),('b','o','$'),('b','o','#'),('b','u','!'),('b','u','$'),('b','u','#'),('t','a','!'),('t','a','$'),('t','a','#'),('t','e','!'),('t','e','$'),('t','e','#'),('t','i','!'),('t','i','$'),('t','i','#'),('t','o','!'),('t','o','$'),('t','o','#'),('t','u','!'),('t','u','$'),('t','u','#'),('d','a','!'),('d','a','$'),('d','a','#'),('d','e','!'),('d','e','$'),('d','e','#'),('d','i','!'),('d','i','$'),('d','i','#'),('d','o','!'),('d','o','$'),('d','o','#'),('d','u','!'),('d','u','$'),('d','u','#'),('k','a','!'),('k','a','$'),('k','a','#'),('k','e','!'),('k','e','$'),('k','e','#'),('k','i','!'),('k','i','$'),('k','i','#'),('k','o','!'),('k','o','$'),('k','o','#'),('k','u','!'),('k','u','$'),('k','u','#'),('g','a','!'),('g','a','$'),('g','a','#'),('g','e','!'),('g','e','$'),('g','e','#'),('g','i','!'),('g','i','$'),('g','i','#'),('g','o','!'),('g','o','$'),('g','o','#'),('g','u','!'),('g','u','$'),('g','u','#')]
