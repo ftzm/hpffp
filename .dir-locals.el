@@ -1,1 +1,1 @@
-((nil . ((dante-methods . (new-flake)))))
+((nil . ((dante-methods . (bare-cabal)))))

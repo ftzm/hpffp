@@ -5,7 +5,6 @@ import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 
-
 -- Notes and exercises for chapter 18.
 
 -------------------------------------------------------------------------------
