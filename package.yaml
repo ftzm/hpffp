@@ -10,6 +10,7 @@ dependencies:
 - hspec
 - QuickCheck
 - checkers
+- mtl
 
 library:
   source-dirs: .
