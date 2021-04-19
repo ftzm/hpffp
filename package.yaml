@@ -11,6 +11,9 @@ dependencies:
 - QuickCheck
 - checkers
 - mtl
+- transformers
+- dlist
+- random
 
 library:
   source-dirs: .
