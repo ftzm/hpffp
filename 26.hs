@@ -1,7 +1,17 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TupleSections #-}
 
 module Chapter26 where
+
+import Control.Monad.Trans.Identity
+import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Reader
+import Control.Monad.Trans.Class
+import Data.Functor.Identity
+
+--------------------------------------------------------------------------------
+-- EitherT
 
 newtype EitherT e m a = EitherT { runEitherT :: m (Either e a) }
 
@@ -49,3 +59,64 @@ eitherT  f g (EitherT ma) = do
   case v of
     Left a -> f a
     Right b -> g b
+
+--------------------------------------------------------------------------------
+-- StateT
+
+newtype StateT s m a = StateT { runStateT :: s -> m (a,s) }
+
+instance (Functor m) => Functor (StateT s m) where
+  fmap f (StateT g) = StateT $ \s -> fmap (\(a, s') -> (f a, s')) (g s)
+
+instance (Monad m) => Applicative (StateT s m) where
+  pure x = StateT $ \s -> pure (x, s)
+  (StateT a) <*> (StateT b) = StateT $ \s -> do
+    (f, s') <- a s
+    (x, s'') <- b s'
+    return (f x, s'')
+
+instance (Monad m) => Monad (StateT s m) where
+  return = pure
+  StateT (sma) >>= f = StateT $ \s -> do
+    (x, s') <- sma s
+    runStateT (f x) s'
+
+--------------------------------------------------------------------------------
+-- Wrap it up
+
+newtype ExceptT e m a = ExceptT { runExceptT :: m (Either e a) }
+
+-- exercise originally broken for lack of `return` in original
+embedded :: MaybeT (ExceptT String (ReaderT () IO)) Int
+embedded = MaybeT $ ExceptT $ ReaderT (const (return (Right (Just 1))))
+
+
+--------------------------------------------------------------------------------
+-- Lift More
+
+instance MonadTrans (EitherT e) where
+  lift = EitherT . fmap Right
+
+instance MonadTrans (StateT s) where
+  lift m = StateT $ \s -> fmap (,s) m
+
+--------------------------------------------------------------------------------
+-- LiftIO
+
+newtype IdentityT f a = IdentityT { runIdentityT :: f a }
+  deriving (Functor, Applicative, Monad)
+
+
+class (Monad m) => MonadIO m where
+-- | Lift a computation
+-- from the 'IO' monad.
+  liftIO :: IO a -> m a
+
+instance (MonadIO m) => MonadIO (MaybeT m) where
+  liftIO = lift . liftIO
+
+instance (MonadIO m) => MonadIO (ReaderT r m) where
+  liftIO = lift . liftIO
+
+instance (MonadIO m) => MonadIO (StateT s m) where
+  liftIO = lift . liftIO
